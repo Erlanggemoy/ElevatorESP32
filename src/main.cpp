@@ -142,9 +142,13 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(closeDoorButton), closeDoorISR, FALLING);
 
   // Buat tasks
+
+  // Core 1
   xTaskCreatePinnedToCore(liftControlTask, "LiftControl", 4096, NULL, 3, NULL, 1);
   xTaskCreatePinnedToCore(requestManagerTask, "RequestManager", 2048, NULL, 2, NULL, 1);
   xTaskCreatePinnedToCore(doorControlTask, "DoorControl", 2048, NULL, 2, NULL, 1);
+  
+  //Core 0
   xTaskCreatePinnedToCore(lcdUpdateTask, "LCDUpdate", 2048, NULL, 1, NULL, 0);
   xTaskCreatePinnedToCore(ledUpdateTask, "LEDUpdate", 1024, NULL, 1, NULL, 0);
 
