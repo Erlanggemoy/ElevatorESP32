@@ -61,6 +61,29 @@ bool upRequests[4] = {false, false, false, false};    // Index 1-3 untuk lantai 
 bool downRequests[4] = {false, false, false, false};  // Index 1-3 untuk lantai 1-3
 bool insideRequests[4] = {false, false, false, false}; // Request dari dalam lift
 
+// Function Prototypes (Deklarasi fungsi)
+void requestManagerTask(void *parameter);
+void liftControlTask(void *parameter);
+void doorControlTask(void *parameter);
+void lcdUpdateTask(void *parameter);
+void ledUpdateTask(void *parameter);
+bool hasAnyRequest();
+void determineInitialDirection();
+void moveUpAndServe();
+void moveDownAndServe();
+bool shouldStopAtFloor(int floor, Direction dir);
+void serveFloor(int floor, Direction dir);
+bool hasUpRequests();
+bool hasDownRequests();
+bool hasRequestsAbove();
+bool hasRequestsBelow();
+void moveToFloor(int targetFloor);
+void updateLEDs();
+void updateLCD();
+void openDoor();
+void closeDoor();
+void playArrivalBuzzer();
+
 // ISR untuk tombol lantai (dari dalam lift)
 void IRAM_ATTR button1ISR() {
   FloorRequest req = {1, IDLE, true};
@@ -142,13 +165,9 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(closeDoorButton), closeDoorISR, FALLING);
 
   // Buat tasks
-
-  // Core 1
   xTaskCreatePinnedToCore(liftControlTask, "LiftControl", 4096, NULL, 3, NULL, 1);
   xTaskCreatePinnedToCore(requestManagerTask, "RequestManager", 2048, NULL, 2, NULL, 1);
   xTaskCreatePinnedToCore(doorControlTask, "DoorControl", 2048, NULL, 2, NULL, 1);
-  
-  //Core 0
   xTaskCreatePinnedToCore(lcdUpdateTask, "LCDUpdate", 2048, NULL, 1, NULL, 0);
   xTaskCreatePinnedToCore(ledUpdateTask, "LEDUpdate", 1024, NULL, 1, NULL, 0);
 
@@ -381,7 +400,7 @@ void moveToFloor(int targetFloor) {
   if (xSemaphoreTake(motorMutex, portMAX_DELAY) == pdTRUE) {
     Serial.printf("Moving from floor %d to %d\n", currentFloor, targetFloor);
     
-    int stepCount = abs(targetFloor - currentFloor) * 2000;
+    int stepCount = abs(targetFloor - currentFloor) * 1000;
     digitalWrite(dirPin, targetFloor > currentFloor ? HIGH : LOW);
 
     for (int i = 0; i < stepCount; i++) {
