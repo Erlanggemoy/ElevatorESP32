@@ -400,7 +400,7 @@ void moveToFloor(int targetFloor) {
   if (xSemaphoreTake(motorMutex, portMAX_DELAY) == pdTRUE) {
     Serial.printf("Moving from floor %d to %d\n", currentFloor, targetFloor);
     
-    int stepCount = abs(targetFloor - currentFloor) * 2000;
+    int stepCount = abs(targetFloor - currentFloor) * 1000;
     digitalWrite(dirPin, targetFloor > currentFloor ? HIGH : LOW);
 
     for (int i = 0; i < stepCount; i++) {
