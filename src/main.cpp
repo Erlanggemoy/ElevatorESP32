@@ -61,29 +61,6 @@ bool upRequests[4] = {false, false, false, false};    // Index 1-3 untuk lantai 
 bool downRequests[4] = {false, false, false, false};  // Index 1-3 untuk lantai 1-3
 bool insideRequests[4] = {false, false, false, false}; // Request dari dalam lift
 
-// Function Prototypes (Deklarasi fungsi)
-void requestManagerTask(void *parameter);
-void liftControlTask(void *parameter);
-void doorControlTask(void *parameter);
-void lcdUpdateTask(void *parameter);
-void ledUpdateTask(void *parameter);
-bool hasAnyRequest();
-void determineInitialDirection();
-void moveUpAndServe();
-void moveDownAndServe();
-bool shouldStopAtFloor(int floor, Direction dir);
-void serveFloor(int floor, Direction dir);
-bool hasUpRequests();
-bool hasDownRequests();
-bool hasRequestsAbove();
-bool hasRequestsBelow();
-void moveToFloor(int targetFloor);
-void updateLEDs();
-void updateLCD();
-void openDoor();
-void closeDoor();
-void playArrivalBuzzer();
-
 // ISR untuk tombol lantai (dari dalam lift)
 void IRAM_ATTR button1ISR() {
   FloorRequest req = {1, IDLE, true};
@@ -400,7 +377,7 @@ void moveToFloor(int targetFloor) {
   if (xSemaphoreTake(motorMutex, portMAX_DELAY) == pdTRUE) {
     Serial.printf("Moving from floor %d to %d\n", currentFloor, targetFloor);
     
-    int stepCount = abs(targetFloor - currentFloor) * 1000;
+    int stepCount = abs(targetFloor - currentFloor) * 2000;
     digitalWrite(dirPin, targetFloor > currentFloor ? HIGH : LOW);
 
     for (int i = 0; i < stepCount; i++) {
@@ -462,9 +439,8 @@ void closeDoor() {
 void playArrivalBuzzer() {
   // Bunyi "beep beep" saat sampai lantai
   for (int i = 0; i < 2; i++) {
-    digitalWrite(buzzer, HIGH);
-    vTaskDelay(pdMS_TO_TICKS(200));
-    digitalWrite(buzzer, LOW);
-    vTaskDelay(pdMS_TO_TICKS(300));
+    tone(buzzer, 2000, 200);  // Frekuensi 2000Hz, durasi 200ms
+    delay(300);
   }
+  noTone(buzzer);
 }
